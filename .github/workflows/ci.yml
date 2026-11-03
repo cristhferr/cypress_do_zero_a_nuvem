@@ -1,5 +1,7 @@
 name: End-to-end tests
-on: push
+on:
+  push:
+  pull_request:
 jobs:
   cypress-run:
     runs-on: ubuntu-22.04
@@ -11,4 +13,5 @@ jobs:
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         with:
-          command: npm run test:cloud
+          command: npm test
+          record: ${{ secrets.CYPRESS_RECORD_KEY != '' }}

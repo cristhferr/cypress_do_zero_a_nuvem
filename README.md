@@ -24,6 +24,10 @@ Run `npm test` (or `npm t` for the short version) to run the test in headless mo
 
 Or, run `npm run cy:open` to open Cypress in interactive mode.
 
+### GitHub Actions
+
+The workflow in [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs the Cypress tests on every push and pull request. It runs without a Cypress Cloud key; to also record runs in Cypress Cloud, add `CYPRESS_RECORD_KEY` under **Settings > Secrets and variables > Actions** in the GitHub repository.
+
 ## Support this project
 
 If you want to support this project, leave a ⭐.
