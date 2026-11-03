@@ -39,7 +39,7 @@ npm run test:mobile
 
 ## Integração contínua
 
-O workflow do [GitHub Actions](./.github/workflows/ci.yml) executa os testes em cada push e pull request. Para registrar as execuções no Cypress Cloud, configure o segredo `CYPRESS_RECORD_KEY` em **Settings > Secrets and variables > Actions** no repositório.
+O workflow do [GitHub Actions](./.github/workflows/ci.yml) executa os testes em cada push e pull request. Também é possível iniciar uma execução manualmente em **Actions > End-to-end tests > Run workflow**. Para registrar as execuções no Cypress Cloud, configure o segredo `CYPRESS_RECORD_KEY` em **Settings > Secrets and variables > Actions** no repositório.
 
 ## Créditos e licença
 
