@@ -1,37 +1,46 @@
-# cy-data-test
+# Cypress do Zero à Nuvem
 
-[![main](https://github.com/wlsf82/cy-data-test/actions/workflows/ci.yml/badge.svg)](https://github.com/wlsf82/cy-data-test/actions)
+[![Testes E2E](https://github.com/cristhferr/cypress_do_zero_a_nuvem/actions/workflows/ci.yml/badge.svg)](https://github.com/cristhferr/cypress_do_zero_a_nuvem/actions/workflows/ci.yml)
 
-Sample project to demonstrate a `cy.dataTest` Cypress custom command.
+Projeto de automação de testes end-to-end com Cypress, desenvolvido para praticar fluxos de cadastro, autenticação, compras e validações da aplicação Advantage Online Shopping.
 
-## Pre-requirements
+## Pré-requisitos
 
-It is required to have Node.js and npm installed to run this project.
+- Node.js
+- npm
 
-> I used versions `v18.15.0` and `9.5.0` of Node.js and npm, respectively. I suggest you use the same or later versions.
+## Instalação
 
-## Installation
+Na raiz do projeto, instale as dependências:
 
-Run `npm install` (or `npm i` for the short version) to install the dev dependencies.
+```bash
+npm install
+```
 
-## Tests
+## Executar os testes
 
-> **Note:** Before running the tests, make a copy of the `cypress.env.example.json` file as `cypress.env.json`, which in the real world, you would update with valid credentials.
->
-> The `cypress.env.json` file is included on [`.gitignore`](./.gitignore) and you're safe that confidential info won't be versioned.
+Para executar todos os testes em modo headless:
 
-Run `npm test` (or `npm t` for the short version) to run the test in headless mode.
+```bash
+npm test
+```
 
-Or, run `npm run cy:open` to open Cypress in interactive mode.
+Para abrir o Cypress em modo interativo:
 
-### GitHub Actions
+```bash
+npm run cy:open
+```
 
-The workflow in [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs the Cypress tests on every push and pull request. It runs without a Cypress Cloud key; to also record runs in Cypress Cloud, add `CYPRESS_RECORD_KEY` under **Settings > Secrets and variables > Actions** in the GitHub repository.
+Para executar com viewport mobile:
 
-## Support this project
+```bash
+npm run test:mobile
+```
 
-If you want to support this project, leave a ⭐.
+## Integração contínua
 
-___
+O workflow do [GitHub Actions](./.github/workflows/ci.yml) executa os testes em cada push e pull request. Para registrar as execuções no Cypress Cloud, configure o segredo `CYPRESS_RECORD_KEY` em **Settings > Secrets and variables > Actions** no repositório.
 
-This project was created with 💚 by [Walmyr](https://walmyr.dev).
+## Créditos e licença
+
+Este projeto foi iniciado a partir do material educacional [Cypress, do Zero à Nuvem](https://github.com/wlsf82/cypress-do-zero-a-nuvem) e adaptado para fins de estudo e prática. A licença MIT e seus avisos de copyright permanecem no arquivo [LICENSE](./LICENSE).
