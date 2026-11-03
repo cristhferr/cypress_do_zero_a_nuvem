@@ -172,6 +172,11 @@ describe('Advantage Demo', () => {
     })
     cy.wait('@logout').its('response').should('exist')
     cy.get('#menuUserLink .hi-user').should('have.class', 'ng-hide')
+    cy.get('#loginMiniTitle').then($menu => {
+      if ($menu.is(':visible')) {
+        cy.get('#menuUserLink:visible').click({ force: true })
+      }
+    })
   }
 
   const signIn = ({ username, password }) => {
