@@ -175,7 +175,11 @@ describe('Advantage Demo', () => {
   }
 
   const signIn = ({ username, password }) => {
-    cy.get('#menuUserLink:visible').click()
+    cy.get('#menuUserLink:visible').then($menuUserLink => {
+      if (!Cypress.$('input[name="username"]:visible').length) {
+        cy.wrap($menuUserLink).click({ force: true })
+      }
+    })
     cy.get('input[name="username"]:visible').should('be.visible')
     cy.get('input[name="username"]:visible').type(username)
     cy.get('input[name="password"]:visible').should('be.visible')
