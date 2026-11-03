@@ -1,8 +1,8 @@
 describe('Advantage Demo', () => {
-  beforeEach(() => {
+  const visitHome = () => {
     cy.visit('https://advantageonlineshopping.com/#/')
     cy.title().should('eq', '\u00a0Advantage Shopping')
-  })
+  }
 
   const openRegistrationForm = () => {
     cy.visit('https://advantageonlineshopping.com/#/register')
@@ -251,6 +251,7 @@ describe('Advantage Demo', () => {
   }
 
   it('cria uma conta e mantém a sessão autenticada', () => {
+    visitHome()
     const credentials = createAccountCredentials()
 
     registerAccount(credentials, { allowOffersPromotion: true })
@@ -259,6 +260,7 @@ describe('Advantage Demo', () => {
   })
 
   it('recusa cadastro quando as senhas não coincidem', () => {
+    visitHome()
     const credentials = createAccountCredentials()
 
     openRegistrationForm()
@@ -272,6 +274,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede cadastro sem aceitar os termos de uso', () => {
+    visitHome()
     const credentials = createAccountCredentials()
 
     openRegistrationForm()
@@ -286,6 +289,7 @@ describe('Advantage Demo', () => {
   })
 
   it('permite entrar novamente após sair da conta', () => {
+    visitHome()
     const credentials = createAccountCredentials()
 
     registerAccount(credentials)
@@ -300,6 +304,7 @@ describe('Advantage Demo', () => {
   })
 
   it('recusa login com usuário ou senha incorretos', () => {
+    visitHome()
     const credentials = createAccountCredentials()
 
     cy.intercept('POST', '**/AccountLoginRequest').as('login')
@@ -316,6 +321,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede criar novamente uma conta com o mesmo username', () => {
+    visitHome()
     const seed = Cypress._.random(100000, 999999)
     const username = `cy${seed}`
 
@@ -346,6 +352,7 @@ describe('Advantage Demo', () => {
   })
 
   it('permite iniciar uma compra sem login', () => {
+    visitHome()
     cy.get('#menuUserLink .hi-user')
       .should('be.empty')
       .and('have.class', 'ng-hide')
@@ -382,6 +389,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede adicionar ao carrinho uma quantidade igual a zero', () => {
+    visitHome()
     cy.get('#speakersImg').click()
     cy.contains('button[name="buy_now"]', 'BUY NOW').click()
     cy.get('input[name="quantity"]').clear().type('0')
@@ -389,6 +397,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede pagamento com CVV incompleto', () => {
+    visitHome()
     const cardNumber = String(Cypress._.random(100000000000, 999999999999))
 
     openAuthenticatedPaymentPage()
@@ -404,6 +413,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede pagamento com número de cartão inválido', () => {
+    visitHome()
     const invalidCardNumber = '1234'
     const cvv = String(Cypress._.random(100, 999))
 
@@ -424,6 +434,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede pagamento sem o nome do titular', () => {
+    visitHome()
     const cardNumber = String(Cypress._.random(100000000000, 999999999999))
     const cvv = String(Cypress._.random(100, 999))
 
@@ -437,6 +448,7 @@ describe('Advantage Demo', () => {
   })
 
   it('não oferece anos de validade de cartão expirados', () => {
+    visitHome()
     openAuthenticatedPaymentPage()
     cy.get('[name="yyyyListbox"] option').then($options => {
       const availableYears = $options
@@ -453,6 +465,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede pagamento sem o número do cartão', () => {
+    visitHome()
     const cvv = String(Cypress._.random(100, 999))
 
     openAuthenticatedPaymentPage()
@@ -467,6 +480,7 @@ describe('Advantage Demo', () => {
   })
 
   it('impede pagamento com cartão expirado no mês anterior', () => {
+    visitHome()
     const cardNumber = String(Cypress._.random(100000000000, 999999999999))
     const cvv = String(Cypress._.random(100, 999))
     const now = new Date()
@@ -500,6 +514,7 @@ describe('Advantage Demo', () => {
   })
 
   it.skip('não salva o cartão no perfil quando a opção de salvamento fica desmarcada', () => {
+    visitHome()
     const credentials = createAccountCredentials()
     const cardNumber = '411111111117'
     const cvv = String(Cypress._.random(100, 999))
@@ -530,6 +545,7 @@ describe('Advantage Demo', () => {
   })
 
   it('mantém o cartão salvo após sair, entrar e editar os dados', () => {
+    visitHome()
     const seed = Cypress._.random(100000, 999999)
     const username = `cy${seed}`
     const credentials = {
@@ -575,6 +591,7 @@ describe('Advantage Demo', () => {
   })
 
   it('finaliza uma compra autenticada e confere o pedido em My Orders', () => {
+    visitHome()
     const seed = Cypress._.random(100000, 999999)
     const username = `cy${seed}`
     const email = `${username}@example.com`
