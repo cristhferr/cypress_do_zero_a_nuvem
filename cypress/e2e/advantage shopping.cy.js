@@ -513,37 +513,6 @@ describe('Advantage Demo', () => {
     })
   })
 
-  it.skip('não salva o cartão no perfil quando a opção de salvamento fica desmarcada', () => {
-    visitHome()
-    const credentials = createAccountCredentials()
-    const cardNumber = '411111111117'
-    const cvv = String(Cypress._.random(100, 999))
-
-    openAuthenticatedPaymentPage(credentials)
-    fillCardNumberDirectly(cardNumber)
-    fillCvvAndExpiration(cvv)
-    cy.get('input[name="cardholder_name"]').type('Cypress Tester', {
-      force: true,
-    })
-    cy.get('input[name="save_master_credit"]')
-      .uncheck()
-      .should('not.be.checked')
-
-    cy.intercept('POST', '**/order/api/v1/orders/users/**').as('placeOrder')
-    cy.get('#pay_now_btn_ManualPayment').should('be.enabled').click()
-    cy.wait('@placeOrder', { timeout: 20000 }).then(({ response }) => {
-      expect(response).to.exist
-      expect(response.statusCode).to.eq(200)
-      expect(response.body.success).to.eq(true)
-    })
-
-    cy.contains('Thank you for buying with Advantage').should('be.visible')
-    signOut()
-    signIn(credentials)
-    openMyAccount()
-    cy.contains('article', 'MasterCredit').should('not.exist')
-  })
-
   it('mantém o cartão salvo após sair, entrar e editar os dados', () => {
     visitHome()
     const seed = Cypress._.random(100000, 999999)
