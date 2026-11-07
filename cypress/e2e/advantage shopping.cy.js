@@ -250,152 +250,6 @@ describe('Advantage Demo', () => {
     )
   }
 
-  it('cria uma conta e mantém a sessão autenticada', () => {
-    visitHome()
-    const credentials = createAccountCredentials()
-
-    registerAccount(credentials, { allowOffersPromotion: true })
-    cy.visit('https://advantageonlineshopping.com/#/')
-    cy.get('#menuUserLink:visible').should('contain.text', credentials.username)
-  })
-
-  it('recusa cadastro quando as senhas não coincidem', () => {
-    visitHome()
-    const credentials = createAccountCredentials()
-
-    openRegistrationForm()
-    fillRegistrationForm({
-      ...credentials,
-      confirmPassword: `${credentials.password.slice(0, -1)}b`,
-      includeProfile: false,
-    })
-
-    cy.get('#register_btn').should('be.disabled')
-  })
-
-  it('impede cadastro sem aceitar os termos de uso', () => {
-    visitHome()
-    const credentials = createAccountCredentials()
-
-    openRegistrationForm()
-    fillRegistrationForm({
-      ...credentials,
-      includeProfile: false,
-      acceptTerms: false,
-    })
-
-    cy.get('[name="i_agree"]').should('not.be.checked')
-    cy.get('#register_btn').should('be.disabled')
-  })
-
-  it('permite entrar novamente após sair da conta', () => {
-    visitHome()
-    const credentials = createAccountCredentials()
-
-    registerAccount(credentials)
-    cy.visit('https://advantageonlineshopping.com/#/')
-    cy.get('#menuUserLink:visible').should('contain.text', credentials.username)
-    signOut()
-    cy.get('#menuUserLink:visible').should(
-      'not.contain.text',
-      credentials.username
-    )
-    signIn(credentials)
-  })
-
-  it('recusa login com usuário ou senha incorretos', () => {
-    visitHome()
-    const credentials = createAccountCredentials()
-
-    cy.intercept('POST', '**/AccountLoginRequest').as('login')
-    cy.get('#menuUserLink:visible').click()
-    cy.get('input[name="username"]:visible').type(credentials.username)
-    cy.get('input[name="password"]:visible').type(credentials.password, {
-      log: false,
-    })
-    cy.get('#sign_in_btn:visible').click()
-    cy.wait('@login').its('response').should('exist')
-
-    cy.get('#menuUserLink .hi-user').should('have.class', 'ng-hide')
-    cy.get('#sign_in_btn:visible').should('be.visible')
-  })
-
-  it('impede criar novamente uma conta com o mesmo username', () => {
-    visitHome()
-    const seed = Cypress._.random(100000, 999999)
-    const username = `cy${seed}`
-
-    registerAccount(
-      {
-        username,
-        email: `${username}@example.com`,
-        password: `Pass${seed}a`,
-      },
-      {
-        includeProfile: false,
-      }
-    )
-    cy.visit('https://advantageonlineshopping.com/#/')
-    cy.get('#menuUserLink:visible').should('contain.text', username)
-    signOut()
-
-    cy.visit('https://advantageonlineshopping.com/')
-    openRegistrationForm()
-    fillRegistrationForm({
-      username,
-      email: `${username}-different@example.com`,
-      password: `Pass${seed}a`,
-      includeProfile: false,
-    })
-    cy.get('#register_btn').click()
-    cy.contains('User name already exists').should('be.visible')
-  })
-
-  it('permite iniciar uma compra sem login', () => {
-    visitHome()
-    cy.get('#menuUserLink .hi-user')
-      .should('be.empty')
-      .and('have.class', 'ng-hide')
-
-    cy.get('#speakersImg').click()
-    cy.contains('button[name="buy_now"]', 'BUY NOW').click()
-
-    cy.get('h1:visible').should(
-      'contain.text',
-      'HP S9500 BLUETOOTH WIRELESS SPEAKER'
-    )
-    cy.get('h2:visible').should('contain.text', '$200.00')
-    cy.get('input[name="quantity"]').clear().type('2')
-    cy.get('button[name="save_to_cart"]').click()
-
-    cy.get('#shoppingCartLink').trigger('mouseenter')
-    cy.get('#toolTipCart:visible').within(() => {
-      cy.contains('HP S9500 BLUETOOTH WIRELESS').should('be.visible')
-      cy.contains('QTY: 2').should('be.visible')
-      cy.contains('$400.00').should('be.visible')
-      cy.get('#checkOutPopUp').click()
-    })
-
-    cy.contains('ORDER PAYMENT').should('be.visible')
-    cy.get('#registration_btn').should('be.visible')
-    cy.get('input[name="usernameInOrderPayment"]').should('be.visible')
-    cy.get('input[name="passwordInOrderPayment"]').should('be.visible')
-    cy.get('#userCart:visible').within(() => {
-      cy.contains('HP S9500 BLUETOOTH WIRELESS').should('be.visible')
-      cy.contains('QTY: 2').should('be.visible')
-      cy.contains('$400.00').should('be.visible')
-    })
-    cy.get('#shoppingCartLink span.cart').should('have.text', '2')
-  })
-
-  it('impede adicionar ao carrinho uma quantidade igual a zero', () => {
-    visitHome()
-    cy.get('#speakersImg').click()
-    cy.contains('button[name="buy_now"]', 'BUY NOW').click()
-    cy.get('input[name="quantity"]').clear().type('0')
-    cy.get('input[name="quantity"]').should('have.value', '1')
-  })
-
   it('impede pagamento com CVV incompleto', () => {
     visitHome()
     const cardNumber = String(Cypress._.random(100000000000, 999999999999))
@@ -638,4 +492,150 @@ describe('Advantage Demo', () => {
       .should('contain.text', 'HP S9500 Bluetooth Wireless Speaker')
       .and('contain.text', String(quantity))
   })
+  it('cria uma conta e mantém a sessão autenticada', () => {
+    visitHome()
+    const credentials = createAccountCredentials()
+
+    registerAccount(credentials, { allowOffersPromotion: true })
+    cy.visit('https://advantageonlineshopping.com/#/')
+    cy.get('#menuUserLink:visible').should('contain.text', credentials.username)
+  })
+
+  it('recusa cadastro quando as senhas não coincidem', () => {
+    visitHome()
+    const credentials = createAccountCredentials()
+
+    openRegistrationForm()
+    fillRegistrationForm({
+      ...credentials,
+      confirmPassword: `${credentials.password.slice(0, -1)}b`,
+      includeProfile: false,
+    })
+
+    cy.get('#register_btn').should('be.disabled')
+  })
+
+  it('impede cadastro sem aceitar os termos de uso', () => {
+    visitHome()
+    const credentials = createAccountCredentials()
+
+    openRegistrationForm()
+    fillRegistrationForm({
+      ...credentials,
+      includeProfile: false,
+      acceptTerms: false,
+    })
+
+    cy.get('[name="i_agree"]').should('not.be.checked')
+    cy.get('#register_btn').should('be.disabled')
+  })
+
+  it('permite entrar novamente após sair da conta', () => {
+    visitHome()
+    const credentials = createAccountCredentials()
+
+    registerAccount(credentials)
+    cy.visit('https://advantageonlineshopping.com/#/')
+    cy.get('#menuUserLink:visible').should('contain.text', credentials.username)
+    signOut()
+    cy.get('#menuUserLink:visible').should(
+      'not.contain.text',
+      credentials.username
+    )
+    signIn(credentials)
+  })
+
+  it('recusa login com usuário ou senha incorretos', () => {
+    visitHome()
+    const credentials = createAccountCredentials()
+
+    cy.intercept('POST', '**/AccountLoginRequest').as('login')
+    cy.get('#menuUserLink:visible').click()
+    cy.get('input[name="username"]:visible').type(credentials.username)
+    cy.get('input[name="password"]:visible').type(credentials.password, {
+      log: false,
+    })
+    cy.get('#sign_in_btn:visible').click()
+    cy.wait('@login').its('response').should('exist')
+
+    cy.get('#menuUserLink .hi-user').should('have.class', 'ng-hide')
+    cy.get('#sign_in_btn:visible').should('be.visible')
+  })
+
+  it('impede criar novamente uma conta com o mesmo username', () => {
+    visitHome()
+    const seed = Cypress._.random(100000, 999999)
+    const username = `cy${seed}`
+
+    registerAccount(
+      {
+        username,
+        email: `${username}@example.com`,
+        password: `Pass${seed}a`,
+      },
+      {
+        includeProfile: false,
+      }
+    )
+    cy.visit('https://advantageonlineshopping.com/#/')
+    cy.get('#menuUserLink:visible').should('contain.text', username)
+    signOut()
+
+    cy.visit('https://advantageonlineshopping.com/')
+    openRegistrationForm()
+    fillRegistrationForm({
+      username,
+      email: `${username}-different@example.com`,
+      password: `Pass${seed}a`,
+      includeProfile: false,
+    })
+    cy.get('#register_btn').click()
+    cy.contains('User name already exists').should('be.visible')
+  })
+
+  it('permite iniciar uma compra sem login', () => {
+    visitHome()
+    cy.get('#menuUserLink .hi-user')
+      .should('be.empty')
+      .and('have.class', 'ng-hide')
+
+    cy.get('#speakersImg').click()
+    cy.contains('button[name="buy_now"]', 'BUY NOW').click()
+
+    cy.get('h1:visible').should(
+      'contain.text',
+      'HP S9500 BLUETOOTH WIRELESS SPEAKER'
+    )
+    cy.get('h2:visible').should('contain.text', '$200.00')
+    cy.get('input[name="quantity"]').clear().type('2')
+    cy.get('button[name="save_to_cart"]').click()
+
+    cy.get('#shoppingCartLink').trigger('mouseenter')
+    cy.get('#toolTipCart:visible').within(() => {
+      cy.contains('HP S9500 BLUETOOTH WIRELESS').should('be.visible')
+      cy.contains('QTY: 2').should('be.visible')
+      cy.contains('$400.00').should('be.visible')
+      cy.get('#checkOutPopUp').click()
+    })
+
+    cy.contains('ORDER PAYMENT').should('be.visible')
+    cy.get('#registration_btn').should('be.visible')
+    cy.get('input[name="usernameInOrderPayment"]').should('be.visible')
+    cy.get('input[name="passwordInOrderPayment"]').should('be.visible')
+    cy.get('#userCart:visible').within(() => {
+      cy.contains('HP S9500 BLUETOOTH WIRELESS').should('be.visible')
+      cy.contains('QTY: 2').should('be.visible')
+      cy.contains('$400.00').should('be.visible')
+    })
+    cy.get('#shoppingCartLink span.cart').should('have.text', '2')
+  })
+
+  it('impede adicionar ao carrinho uma quantidade igual a zero', () => {
+    visitHome()
+    cy.get('#speakersImg').click()
+    cy.contains('button[name="buy_now"]', 'BUY NOW').click()
+    cy.get('input[name="quantity"]').clear().type('0')
+    cy.get('input[name="quantity"]').should('have.value', '1')
+  })
+
 })
