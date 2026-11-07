@@ -4,3 +4,7 @@ cypress.env.json
 cypress/downloads/
 cypress/screenshots/
 cypress/videos/
+cypress-error.log
+.postman/
+postman/
+lessons/

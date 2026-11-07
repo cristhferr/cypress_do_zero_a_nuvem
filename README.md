@@ -6,7 +6,7 @@ Projeto de automação de testes end-to-end com Cypress, desenvolvido para prati
 
 ## Pré-requisitos
 
-- Node.js
+- Node.js 20.x
 - npm
 
 ## Instalação
