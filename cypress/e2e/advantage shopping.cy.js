@@ -1,254 +1,29 @@
+import { homePage } from '../support/pages/homePage'
+import { registrationPage } from '../support/pages/registrationPage'
+import { authPage } from '../support/pages/authPage'
+import { paymentPage } from '../support/pages/paymentPage'
+
 describe('Advantage Demo', () => {
-  const visitHome = () => {
-    cy.visit('https://advantageonlineshopping.com/#/')
-    cy.title().should('eq', '\u00a0Advantage Shopping')
-  }
-
-  const openRegistrationForm = () => {
-    cy.visit('https://advantageonlineshopping.com/#/register')
-    cy.get('[name="usernameRegisterPage"]').should('be.visible')
-  }
-
-  const fillRegistrationForm = ({
-    username,
-    email,
-    password,
-    confirmPassword = password,
-    includeProfile = true,
-    allowOffersPromotion = false,
-    acceptTerms = true,
-  }) => {
-    cy.get('[name="usernameRegisterPage"]').type(username)
-    cy.get('[name="emailRegisterPage"]').type(email)
-    cy.get('[name="passwordRegisterPage"]').type(password, { log: false })
-    cy.get('[name="confirm_passwordRegisterPage"]').type(confirmPassword, {
-      log: false,
-    })
-
-    if (includeProfile) {
-      cy.get('[name="first_nameRegisterPage"]').type('Cypress')
-      cy.get('[name="last_nameRegisterPage"]').type('Tester')
-      cy.get('[name="phone_numberRegisterPage"]').type('2025550147')
-      cy.get('[name="countryListboxRegisterPage"]').select('United States')
-      cy.get('[name="cityRegisterPage"]').type('Springfield')
-      cy.get('[name="addressRegisterPage"]').type('123 Cypress Lane')
-      cy.get('[name="state_/_province_/_regionRegisterPage"]').type(
-        'California',
-        { force: true }
-      )
-      cy.get('[name="postal_codeRegisterPage"]').type('90210', {
-        scrollBehavior: 'center',
-      })
-    }
-
-    if (allowOffersPromotion) {
-      cy.get('[name="allowOffersPromotion"]')
-        .check({ scrollBehavior: 'center' })
-        .should('be.checked')
-    }
-
-    if (acceptTerms) {
-      cy.get('[name="i_agree"]')
-        .check({ scrollBehavior: 'center' })
-        .should('be.checked')
-    }
-  }
-
-  const createAccountCredentials = () => {
-    const seed = Cypress._.random(100000, 999999)
-    const username = `cy${seed}`
-
-    return {
-      username,
-      email: `${username}@example.com`,
-      password: `Pass${seed}a`,
-    }
-  }
-
-  const registerAccount = (credentials, options = {}) => {
-    openRegistrationForm()
-    fillRegistrationForm({ ...credentials, ...options })
-    cy.get('#register_btn').then($button => $button[0].click())
-  }
-
-  const createAccount = (credentials, options = {}) => {
-    registerAccount(credentials, options)
-    cy.visit('https://advantageonlineshopping.com/#/')
-    cy.get('#menuUserLink:visible').should('contain.text', credentials.username)
-    signOut()
-    signIn(credentials)
-  }
-
-  const openAuthenticatedPaymentPage = (
-    credentials = createAccountCredentials()
-  ) => {
-    createAccount(credentials)
-
-    cy.get('#speakersImg').click()
-    cy.contains('button[name="buy_now"]', 'BUY NOW').click()
-    cy.get('input[name="quantity"]').clear().type('1')
-    cy.intercept('POST', '**/order/api/v1/carts/**/product/**').as('addProduct')
-    cy.get('button[name="save_to_cart"]').click()
-    cy.wait('@addProduct').its('response.statusCode').should('eq', 201)
-    cy.get('#shoppingCartLink span.cart').should('have.text', '1')
-    cy.get('#shoppingCartLink').trigger('mouseenter')
-    cy.get('#toolTipCart:visible').within(() => {
-      cy.get('#checkOutPopUp').click()
-    })
-    cy.contains('SHIPPING DETAILS').should('be.visible')
-    cy.contains('button', 'NEXT').click()
-    cy.get('.paymentMethods .imgRadioButton').eq(1).click()
-  }
-
-  const fillCardNumber = cardNumber => {
-    const cardNumberInput = 'input[name="card_number"]'
-    cy.get(cardNumberInput).should('be.visible').clear()
-    cy.get(cardNumberInput)
-      .type(cardNumber, { delay: 100 })
-      .should($input => {
-        const enteredNumber = $input.val().replace(/\D/g, '')
-        expect(enteredNumber.slice(-4)).to.eq(cardNumber.slice(-4))
-      })
-  }
-
-  const fillCardNumberDirectly = cardNumber => {
-    const cardNumberInput = 'input[name="card_number"]'
-    cy.get(cardNumberInput).should('be.visible').then($input => {
-      const input = $input[0]
-      const inputWindow = input.ownerDocument.defaultView
-      const setValue = Object.getOwnPropertyDescriptor(
-        inputWindow.HTMLInputElement.prototype,
-        'value'
-      ).set
-      setValue.call(input, cardNumber)
-      input.dispatchEvent(
-        new inputWindow.Event('input', { bubbles: true })
-      )
-    })
-    cy.get(cardNumberInput).should($input => {
-      const enteredNumber = $input.val().replace(/\D/g, '')
-      expect(enteredNumber).to.have.length(cardNumber.length)
-      expect(enteredNumber.slice(-4)).to.eq(cardNumber.slice(-4))
-    })
-  }
-
-  const fillPaymentDetails = (cardNumber, cvv) => {
-    fillCardNumber(cardNumber)
-    fillCvvAndExpiration(cvv)
-    cy.get('input[name="cardholder_name"]').type('Cypress Tester', {
-      force: true,
-    })
-  }
-
-  const fillCvvAndExpiration = (cvv, year = '2030') => {
-    fillCvv(cvv)
-    cy.get('[name="mmListbox"]').select('12')
-    cy.get('[name="yyyyListbox"]').select(year)
-  }
-
-  const fillCvv = cvv => {
-    cy.get('input[name="cvv_number"]')
-      .click()
-      .clear()
-      .type(cvv, { delay: 100 })
-      .type('{selectall}{backspace}')
-      .type(cvv, { delay: 100 })
-      .should('have.value', cvv)
-  }
-
-  const signOut = () => {
-    cy.intercept('POST', '**/AccountLogoutRequest').as('logout')
-    cy.get('#menuUserLink:visible').click({ force: true })
-    cy.get('#loginMiniTitle').should('be.visible').then($menu => {
-      const signOutButton = $menu.find('[translate="Sign_out"]')
-
-      if (signOutButton.length) {
-        cy.wrap(signOutButton).first().click({ force: true })
-      } else {
-        cy.contains('#loginMiniTitle [translate="Sign_out"]', 'Sign out').click({
-          force: true,
-        })
-      }
-    })
-    cy.wait('@logout').its('response').should('exist')
-    cy.get('#menuUserLink .hi-user').should('have.class', 'ng-hide')
-    cy.get('#loginMiniTitle').then($menu => {
-      if ($menu.is(':visible')) {
-        cy.get('#menuUserLink:visible').click({ force: true })
-      }
-    })
-  }
-
-  const signIn = ({ username, password }) => {
-    cy.get('#menuUserLink:visible').then($menuUserLink => {
-      if (!Cypress.$('input[name="username"]:visible').length) {
-        cy.wrap($menuUserLink).click({ force: true })
-      }
-    })
-    cy.get('input[name="username"]:visible').should('be.visible')
-    cy.get('input[name="username"]:visible').type(username)
-    cy.get('input[name="password"]:visible').should('be.visible')
-    cy.get('input[name="password"]:visible').click()
-    cy.get('input[name="password"]:visible').should('be.visible')
-    cy.get('input[name="password"]:visible').type(password, { log: false })
-    cy.get('#sign_in_btn:visible').click()
-    cy.get('#menuUserLink:visible').should('contain.text', username)
-  }
-
-  const openMyAccount = () => {
-    cy.get('#menuUser').click()
-    cy.get('#loginMiniTitle > [translate="My_account"]').click()
-    cy.location('hash').should('include', '/myAccount')
-  }
-
-  const openAccountPaymentEditor = () => {
-    openMyAccount()
-    cy.get('a[href="#/accountPaymentEdit"]').click()
-    cy.location('hash').should('include', '/accountPaymentEdit')
-    cy.get('img[alt="Master credit"]').click()
-    cy.get('#creditCard').should('be.visible')
-  }
-
-  const saveMasterCredit = ({ cardNumber, cvv, month, year, cardholder }) => {
-    fillCardNumberDirectly(cardNumber)
-    fillCvv(cvv)
-    cy.get('[name="mmListbox"]').select(month)
-    cy.get('[name="yyyyListbox"]').select(year)
-    cy.get('input[name="cardholder_name"]').clear().type(cardholder)
-    cy.get('input[name="save_master_credit"]')
-      .check()
-      .should('be.checked')
-    cy.get('[id="save_btn"]').filter(':visible').should('be.enabled').click()
-    cy.location('hash').should('include', '/myAccount')
-    cy.get('article')
-      .should('contain.text', 'MasterCredit')
-      .and('contain.text', cardNumber.slice(-4))
-  }
-
-  const assertSavedMasterCredit = paymentDetails => {
-    cy.get('article')
-      .should('contain.text', 'MasterCredit')
-      .and('contain.text', paymentDetails.cardNumber.slice(-4))
-    cy.get('a[href="#/accountPaymentEdit"]').click()
-    cy.location('hash').should('include', '/accountPaymentEdit')
-    cy.get('input[name="card_number"]').should($input => {
-      const savedNumber = $input.val().replace(/\D/g, '')
-      expect(savedNumber.slice(-4)).to.eq(paymentDetails.cardNumber.slice(-4))
-    })
-    cy.get('input[name="cvv_number"]').should('have.value', paymentDetails.cvv)
-    cy.get('[name="mmListbox"] option:selected').should(
-      'have.text',
-      paymentDetails.month
-    )
-    cy.get('[name="yyyyListbox"] option:selected').should(
-      'have.text',
-      paymentDetails.year
-    )
-    cy.get('input[name="cardholder_name"]').should(
-      'have.value',
-      paymentDetails.cardholder
-    )
-  }
+  const { visitHome } = homePage
+  const {
+    openRegistrationForm,
+    fillRegistrationForm,
+    createAccountCredentials,
+    registerAccount,
+    createAccount,
+  } = registrationPage
+  const { signOut, signIn, openMyAccount } = authPage
+  const {
+    openAuthenticatedPaymentPage,
+    fillCardNumber,
+    fillCardNumberDirectly,
+    fillPaymentDetails,
+    fillCvvAndExpiration,
+    fillCvv,
+    openAccountPaymentEditor,
+    saveMasterCredit,
+    assertSavedMasterCredit,
+  } = paymentPage
 
   it('impede pagamento com CVV incompleto', () => {
     visitHome()
